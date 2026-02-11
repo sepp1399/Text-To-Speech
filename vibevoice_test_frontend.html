@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeVoice TTS - Test Frontend</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.connecting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        select, input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input[type="number"]:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e0e0e0;
+        }
+
+        .btn-reload {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-reload:hover:not(:disabled) {
+            background: #138496;
+        }
+
+        .logs {
+            margin-top: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: #666;
+            margin-right: 10px;
+        }
+
+        .log-event {
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .log-event.error {
+            color: #dc3545;
+        }
+
+        .log-event.success {
+            color: #28a745;
+        }
+
+        .log-event.info {
+            color: #667eea;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-top: 15px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .info {
+            background: #e7f3ff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #0066cc;
+        }
+
+        .error-box {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ VibeVoice TTS</h1>
+        <p class="subtitle">Test Frontend per Streaming Text-to-Speech</p>
+
+        <span class="status disconnected" id="status">Disconnesso</span>
+
+        <div class="form-group">
+            <label for="serverUrl">Server URL (senza /stream)</label>
+            <input type="text" id="serverUrl" value="http://localhost:8000">
+        </div>
+
+        <div class="form-group">
+            <label for="text">Testo da sintetizzare</label>
+            <textarea id="text" placeholder="Inserisci il testo che vuoi convertire in voce...">Ciao! Questo è un test del sistema di sintesi vocale VibeVoice.</textarea>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label for="voice">Voce</label>
+                <select id="voice">
+                    <option value="">Default</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="cfgScale">CFG Scale</label>
+                <input type="number" id="cfgScale" value="1.5" min="0" max="10" step="0.1">
+            </div>
+
+            <div class="form-group">
+                <label for="steps">Inference Steps</label>
+                <input type="number" id="steps" value="5" min="1" max="50">
+            </div>
+        </div>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" id="generateBtn" onclick="generateSpeech()">
+                🎵 Genera Audio
+            </button>
+            <button class="btn-secondary" id="stopBtn" onclick="stopGeneration()" disabled>
+                ⏹️ Stop
+            </button>
+            <button class="btn-reload" onclick="loadConfig()">
+                🔄 Ricarica Voci
+            </button>
+        </div>
+
+        <div class="error-box" id="errorBox"></div>
+
+        <div class="info">
+            <strong>ℹ️ Info:</strong> Assicurati che il server FastAPI sia in esecuzione. 
+            <span id="serverStatus">Controllo server...</span>
+        </div>
+
+        <div class="logs" id="logs">
+            <div class="log-entry">
+                <span class="log-time">--:--:--</span>
+                <span class="log-event info">INFO</span>
+                <span>Pronto per iniziare</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let audioContext = null;
+        let audioQueue = [];
+        let isPlaying = false;
+        let nextPlayTime = 0;
+        let connectionTimeout = null;
+
+        // Carica configurazione all'avvio
+        window.onload = async () => {
+            await checkServerHealth();
+            await loadConfig();
+        };
+
+        async function checkServerHealth() {
+            try {
+                const serverUrl = document.getElementById('serverUrl').value;
+                const response = await fetch(`${serverUrl}/health`, { timeout: 5000 });
+                const health = await response.json();
+
+                document.getElementById('serverStatus').textContent = `✅ Server OK (${health.model})`;
+                document.getElementById('serverStatus').style.color = '#155724';
+                addLog('SUCCESS', `Server raggiungibile: ${health.model}`);
+                return true;
+            } catch (error) {
+                document.getElementById('serverStatus').textContent = `❌ Server non raggiungibile`;
+                document.getElementById('serverStatus').style.color = '#721c24';
+                addLog('ERROR', `Server non risponde: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function loadConfig() {
+            try {
+                const serverUrl = document.getElementById('serverUrl').value;
+                addLog('INFO', 'Caricamento configurazione voci...');
+
+                const response = await fetch(`${serverUrl}/config`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const config = await response.json();
+
+                const voiceSelect = document.getElementById('voice');
+                voiceSelect.innerHTML = '<option value="">Default</option>';
+
+                if (config.voices && config.voices.length > 0) {
+                    config.voices.forEach(voice => {
+                        const option = document.createElement('option');
+                        option.value = voice;
+                        option.textContent = voice;
+                        if (voice === config.default_voice) {
+                            option.selected = true;
+                        }
+                        voiceSelect.appendChild(option);
+                    });
+
+                    addLog('SUCCESS', `Caricate ${config.voices.length} voci`);
+                } else {
+                    addLog('WARNING', 'Nessuna voce disponibile');
+                }
+            } catch (error) {
+                addLog('ERROR', `Errore caricamento config: ${error.message}`);
+                showError(`Impossibile caricare le voci: ${error.message}`);
+            }
+        }
+
+        function updateStatus(status, text) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = text;
+        }
+
+        function addLog(level, message) {
+            const logsDiv = document.getElementById('logs');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+
+            const now = new Date();
+            const time = now.toLocaleTimeString('it-IT');
+
+            const levelClass = level.toLowerCase();
+
+            logEntry.innerHTML = `
+                <span class="log-time">${time}</span>
+                <span class="log-event ${levelClass}">${level}</span>
+                <span>${message}</span>
+            `;
+
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+
+            // Keep only last 50 logs
+            while (logsDiv.children.length > 50) {
+                logsDiv.removeChild(logsDiv.firstChild);
+            }
+        }
+
+        function showError(message) {
+            const errorBox = document.getElementById('errorBox');
+            errorBox.textContent = `⚠️ ${message}`;
+            errorBox.style.display = 'block';
+            setTimeout(() => {
+                errorBox.style.display = 'none';
+            }, 10000);
+        }
+
+        async function generateSpeech() {
+            const text = document.getElementById('text').value.trim();
+            if (!text) {
+                showError('Inserisci del testo da sintetizzare');
+                return;
+            }
+
+            // Check server first
+            const serverOk = await checkServerHealth();
+            if (!serverOk) {
+                showError('Server non raggiungibile. Verifica che sia in esecuzione.');
+                return;
+            }
+
+            // Inizializza AudioContext
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                addLog('INFO', 'AudioContext inizializzato');
+            }
+
+            // Reset stato audio
+            audioQueue = [];
+            isPlaying = false;
+            nextPlayTime = audioContext.currentTime;
+
+            const serverUrl = document.getElementById('serverUrl').value;
+            const voice = document.getElementById('voice').value;
+            const cfgScale = document.getElementById('cfgScale').value;
+            const steps = document.getElementById('steps').value;
+
+            // Costruisci WebSocket URL
+            const wsUrl = serverUrl.replace('http://', 'ws://').replace('https://', 'wss://');
+            const params = new URLSearchParams({
+                text: text,
+                cfg: cfgScale,
+                steps: steps
+            });
+
+            if (voice) {
+                params.append('voice', voice);
+            }
+
+            const fullUrl = `${wsUrl}/stream?${params.toString()}`;
+
+            addLog('INFO', `Connessione a: ${fullUrl}`);
+            updateStatus('connecting', 'Connessione...');
+
+            try {
+                ws = new WebSocket(fullUrl);
+                ws.binaryType = 'arraybuffer';
+
+                // Timeout per connessione
+                connectionTimeout = setTimeout(() => {
+                    if (ws && ws.readyState === WebSocket.CONNECTING) {
+                        addLog('ERROR', 'Timeout connessione WebSocket');
+                        showError('Timeout connessione. Verifica il server.');
+                        ws.close();
+                        resetUI();
+                    }
+                }, 10000);
+
+                document.getElementById('generateBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+                document.getElementById('progressBar').style.display = 'block';
+
+                ws.onopen = () => {
+                    clearTimeout(connectionTimeout);
+                    updateStatus('connected', 'Connesso ✓');
+                    addLog('SUCCESS', 'WebSocket connesso, in attesa dati...');
+                };
+
+                ws.onmessage = async (event) => {
+                    if (typeof event.data === 'string') {
+                        // Log message
+                        try {
+                            const msg = JSON.parse(event.data);
+
+                            if (msg.event === 'model_progress' && msg.data) {
+                                const generated = msg.data.generated_sec || 0;
+                                const progress = Math.min((generated / 10) * 100, 95);
+                                document.getElementById('progressFill').style.width = progress + '%';
+                                addLog('INFO', `Progresso: ${generated.toFixed(2)}s generati`);
+                            } else if (msg.event === 'backend_stream_complete') {
+                                document.getElementById('progressFill').style.width = '100%';
+                                addLog('SUCCESS', 'Generazione completata');
+                            } else if (msg.event === 'generation_error') {
+                                addLog('ERROR', `Errore generazione: ${msg.data?.message || 'Unknown'}`);
+                                showError(msg.data?.message || 'Errore durante la generazione');
+                            } else {
+                                addLog('INFO', `${msg.event}: ${JSON.stringify(msg.data || {}).substring(0, 80)}`);
+                            }
+                        } catch (e) {
+                            addLog('WARNING', `Messaggio non-JSON: ${event.data.substring(0, 100)}`);
+                        }
+                    } else {
+                        // Audio data (PCM16)
+                        addLog('INFO', `Ricevuto chunk audio: ${event.data.byteLength} bytes`);
+                        await playAudioChunk(event.data);
+                    }
+                };
+
+                ws.onerror = (error) => {
+                    clearTimeout(connectionTimeout);
+                    updateStatus('disconnected', 'Errore ✗');
+                    addLog('ERROR', 'Errore WebSocket - verifica console browser');
+                    console.error('WebSocket error:', error);
+                    showError('Errore WebSocket. Controlla la console.');
+                    resetUI();
+                };
+
+                ws.onclose = (event) => {
+                    clearTimeout(connectionTimeout);
+                    updateStatus('disconnected', 'Disconnesso');
+                    addLog('INFO', `Connessione chiusa (code: ${event.code}, reason: ${event.reason || 'none'})`);
+                    resetUI();
+                };
+            } catch (error) {
+                clearTimeout(connectionTimeout);
+                addLog('ERROR', `Errore creazione WebSocket: ${error.message}`);
+                showError(`Errore: ${error.message}`);
+                resetUI();
+            }
+        }
+
+        async function playAudioChunk(arrayBuffer) {
+            try {
+                // Converti PCM16 in Float32
+                const pcm16 = new Int16Array(arrayBuffer);
+                const float32 = new Float32Array(pcm16.length);
+
+                for (let i = 0; i < pcm16.length; i++) {
+                    float32[i] = pcm16[i] / 32768.0;
+                }
+
+                // Crea AudioBuffer
+                const audioBuffer = audioContext.createBuffer(1, float32.length, 24000);
+                audioBuffer.getChannelData(0).set(float32);
+
+                // Crea source e schedule
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(audioContext.destination);
+
+                const playTime = Math.max(nextPlayTime, audioContext.currentTime);
+                source.start(playTime);
+                nextPlayTime = playTime + audioBuffer.duration;
+
+                addLog('SUCCESS', `Audio chunk: ${(audioBuffer.duration * 1000).toFixed(0)}ms`);
+            } catch (error) {
+                addLog('ERROR', `Errore riproduzione audio: ${error.message}`);
+            }
+        }
+
+        function stopGeneration() {
+            if (ws) {
+                addLog('INFO', 'Chiusura connessione...');
+                ws.close();
+                ws = null;
+            }
+            if (connectionTimeout) {
+                clearTimeout(connectionTimeout);
+            }
+            resetUI();
+        }
+
+        function resetUI() {
+            document.getElementById('generateBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('progressBar').style.display = 'none';
+            document.getElementById('progressFill').style.width = '0%';
+        }
+    </script>
+</body>
+</html>
